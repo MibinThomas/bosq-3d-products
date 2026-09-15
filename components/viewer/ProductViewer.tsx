@@ -8,6 +8,7 @@ import { detectTier } from "@/lib/device";
 import { useViewer } from "@/lib/store";
 import { ViewerToolbar } from "@/components/ui/ViewerToolbar";
 import { LoadingPoster } from "@/components/ui/LoadingPoster";
+import { DEBUG_PALETTE } from "./Model";
 
 // The WebGL scene is client-only and lazy: the poster paints first, the canvas hydrates after.
 const Scene = dynamic(() => import("./Scene").then((m) => m.Scene), { ssr: false });
@@ -20,10 +21,12 @@ interface ProductViewerProps {
   embed?: boolean;
   /** Pipeline poster render: no UI, no auto-rotate, transparent ground, `data-loaded` when ready. */
   poster?: boolean;
+  /** Colour-code GLB materials and show a legend — for mapping material slots to roles. */
+  debugMaterials?: boolean;
   className?: string;
 }
 
-export function ProductViewer({ manifest, locale, initialSku, embed = false, poster = false, className = "" }: ProductViewerProps) {
+export function ProductViewer({ manifest, locale, initialSku, embed = false, poster = false, debugMaterials = false, className = "" }: ProductViewerProps) {
   const dict = getDict(locale);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [contextLost, setContextLost] = useState(false);
@@ -34,6 +37,12 @@ export function ProductViewer({ manifest, locale, initialSku, embed = false, pos
   const setTier = useViewer((s) => s.setTier);
   const sku = useViewer((s) => s.sku);
   const stopAutoRotate = useViewer((s) => s.stopAutoRotate);
+  const setDebugMaterials = useViewer((s) => s.setDebugMaterials);
+
+  useEffect(() => {
+    setDebugMaterials(debugMaterials);
+    return () => setDebugMaterials(false);
+  }, [debugMaterials, setDebugMaterials]);
   const { progress } = useProgress();
 
   useEffect(() => {
@@ -117,6 +126,17 @@ export function ProductViewer({ manifest, locale, initialSku, embed = false, pos
       )}
 
       {!poster && <ViewerToolbar manifest={manifest} locale={locale} fullscreen={fullscreen} onFullscreen={toggleFullscreen} />}
+
+      {debugMaterials && (
+        <ol className="absolute top-3 left-3 z-20 space-y-1 rounded bg-white/90 p-2 font-mono text-[11px] shadow-sm">
+          {Object.keys(manifest.materials).map((name, i) => (
+            <li key={name} className="flex items-center gap-2">
+              <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: DEBUG_PALETTE[i % DEBUG_PALETTE.length] }} />
+              {name} <span className="text-gray-400">{manifest.materials[name].role}</span>
+            </li>
+          ))}
+        </ol>
+      )}
 
       {loaded && !poster && (
         <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/70 px-3 py-1 text-[11px] text-gray-600 backdrop-blur-sm">

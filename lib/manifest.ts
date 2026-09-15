@@ -11,6 +11,8 @@ export interface MaterialOverride {
   color?: string; // hex
   roughness?: number;
   metalness?: number;
+  /** For the mesh role: render as solid fabric instead of perforated mesh (e.g. Orca Echo Green). */
+  solid?: boolean;
 }
 
 export interface Variant {

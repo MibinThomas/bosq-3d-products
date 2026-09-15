@@ -1,21 +1,21 @@
 {
   "slug": "orca",
-  "version": 1,
+  "version": 2,
   "name": {
     "en": "Orca High Back Ergonomic Office Chair",
     "ar": "كرسي أوركا المكتبي المريح بظهر مرتفع"
   },
   "description": {
-    "en": "High back ergonomic office chair with adjustable headrest, 4D armrests and a five-star aluminium base on castors."
+    "en": "High back ergonomic office chair in breathable mesh with adjustable lumbar support, adjustable headrest, synchronized tilt mechanism, Class 4 gas lift and a nylon five-star base on noise-free castors. Model code AYZ 101."
   },
   "category": "chairs",
   "model": {
-    "high": "/models/orca/v1/orca.glb",
-    "low": "/models/orca/v1/orca.lod1.glb",
+    "high": "/models/orca/v2/orca.glb",
+    "low": "/models/orca/v2/orca.lod1.glb",
     "usdz": null
   },
-  "poster": "/models/orca/v1/poster.webp",
-  "og": "/models/orca/v1/og.png",
+  "poster": "/models/orca/v2/poster.webp",
+  "og": "/models/orca/v2/og.png",
   "bounds": {
     "w": 0.744,
     "d": 0.766,
@@ -26,7 +26,7 @@
       -0.009
     ]
   },
-  "dimensionsLabel": "W74 × D78 × H130 cm",
+  "dimensionsLabel": "W62 × D68 × H116–126 cm",
   "camera": {
     "position": [
       1.75,
@@ -42,13 +42,13 @@
   },
   "materials": {
     "Set1.002": {
-      "role": "upholstery"
+      "role": "frame"
     },
     "Set1.003": {
       "role": "upholstery"
     },
     "Set2.002": {
-      "role": "mesh"
+      "role": "frame"
     },
     "Set2.003": {
       "role": "mesh"
@@ -65,32 +65,56 @@
       "sku": "ORC-HB-APPLE-GREEN",
       "color": "apple-green",
       "label": "Apple Green",
-      "swatch": "#7BA23F",
+      "swatch": "#8DB600",
       "materials": {
         "upholstery": {
-          "color": "#7BA23F"
+          "color": "#95C234"
+        },
+        "mesh": {
+          "color": "#A6D63A"
         }
       }
     },
     {
-      "sku": "ORC-HB-BLACK",
-      "color": "black",
-      "label": "Black",
-      "swatch": "#1E1F22",
+      "sku": "ORC-HB-CANDY-RED",
+      "color": "candy-red",
+      "label": "Candy Red",
+      "swatch": "#D9262C",
       "materials": {
         "upholstery": {
-          "color": "#1E1F22"
+          "color": "#E62E32"
+        },
+        "mesh": {
+          "color": "#F04545"
         }
       }
     },
     {
-      "sku": "ORC-HB-GREY",
-      "color": "grey",
-      "label": "Grey",
-      "swatch": "#7D8189",
+      "sku": "ORC-HB-ECHO-GREEN",
+      "color": "echo-green",
+      "label": "Echo Green",
+      "swatch": "#8F9B3C",
       "materials": {
         "upholstery": {
-          "color": "#7D8189"
+          "color": "#A3AF47"
+        },
+        "mesh": {
+          "color": "#A6B24A",
+          "solid": true
+        }
+      }
+    },
+    {
+      "sku": "ORC-HB-PURE-WHITE",
+      "color": "pure-white",
+      "label": "Pure White",
+      "swatch": "#EDEDED",
+      "materials": {
+        "upholstery": {
+          "color": "#E2E4E7"
+        },
+        "mesh": {
+          "color": "#F1F2F4"
         }
       }
     }
@@ -113,5 +137,5 @@
     }
   },
   "productUrl": "https://bosq.ae/en/products/orca?sku=ORC-HB-APPLE-GREEN&attr_color=apple-green",
-  "generatedAt": "2026-09-15T08:52:20.878Z"
+  "generatedAt": "2026-09-15T10:26:15.706Z"
 }

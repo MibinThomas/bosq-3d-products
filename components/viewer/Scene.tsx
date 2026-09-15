@@ -39,7 +39,7 @@ export function Scene({ manifest, onContextLost }: SceneProps) {
         alpha: true,
         powerPreference: "high-performance",
         toneMapping: ACESFilmicToneMapping,
-        toneMappingExposure: 1.0,
+        toneMappingExposure: 1.12,
         outputColorSpace: SRGBColorSpace,
       }}
       onCreated={({ gl }) => {
