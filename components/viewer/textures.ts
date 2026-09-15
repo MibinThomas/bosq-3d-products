@@ -7,6 +7,9 @@ import { CanvasTexture, RepeatWrapping, SRGBColorSpace, type MeshStandardMateria
  */
 const cache = new Map<string, Texture>();
 
+/** Fraction of each thread pitch that is solid thread (the rest is open gap). */
+const MESH_THREAD = 0.45;
+
 function canvas(size: number, draw: (ctx: CanvasRenderingContext2D, size: number) => void): CanvasTexture {
   const c = document.createElement("canvas");
   c.width = c.height = size;
@@ -25,14 +28,14 @@ function canvas(size: number, draw: (ctx: CanvasRenderingContext2D, size: number
 export function meshAlphaMap(repeat = 48): Texture {
   const key = `meshAlpha:${repeat}`;
   if (cache.has(key)) return cache.get(key)!;
-  const tex = canvas(64, (ctx, s) => {
+  const tex = canvas(128, (ctx, s) => {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, s, s);
     ctx.fillStyle = "#fff";
-    // 4 threads per tile, each ~60 % of its pitch, with a thin vertical warp thread.
+    // 4 threads per tile, each ~45 % of its pitch, with a thin vertical warp thread.
     const pitch = s / 4;
-    for (let i = 0; i < 4; i++) ctx.fillRect(0, i * pitch, s, pitch * 0.72);
-    for (let i = 0; i < 4; i++) ctx.fillRect(i * pitch, 0, pitch * 0.22, s);
+    for (let i = 0; i < 4; i++) ctx.fillRect(0, i * pitch, s, pitch * MESH_THREAD);
+    for (let i = 0; i < 4; i++) ctx.fillRect(i * pitch, 0, pitch * 0.14, s);
   });
   tex.repeat.set(repeat, repeat);
   cache.set(key, tex);
@@ -43,10 +46,10 @@ export function meshAlphaMap(repeat = 48): Texture {
 export function meshShadeMap(repeat = 48): Texture {
   const key = `meshShade:${repeat}`;
   if (cache.has(key)) return cache.get(key)!;
-  const tex = canvas(64, (ctx, s) => {
+  const tex = canvas(128, (ctx, s) => {
     const pitch = s / 4;
     for (let i = 0; i < 4; i++) {
-      const g = ctx.createLinearGradient(0, i * pitch, 0, i * pitch + pitch * 0.72);
+      const g = ctx.createLinearGradient(0, i * pitch, 0, i * pitch + pitch * MESH_THREAD);
       g.addColorStop(0, "#ffffff");
       g.addColorStop(0.55, "#f2f2f2");
       g.addColorStop(1, "#d4d4d4");
@@ -94,7 +97,7 @@ export function fabricMap(repeat = 24): Texture {
 /**
  * Samples `map` and `alphaMap` in world space instead of UV space so the weave stays a level,
  * evenly-spaced pattern on any geometry — auto-generated UVs from OBJ exports are usually distorted.
- * `tilesPerMetre` sets the thread pitch (48 tiles × 4 threads ≈ 5 mm per thread).
+ * `tilesPerMetre` sets the thread pitch (120 tiles × 4 threads ≈ 2 mm per thread).
  */
 export function projectPatternInWorldSpace(mat: MeshStandardMaterial, tilesPerMetre = 48): void {
   mat.onBeforeCompile = (shader) => {

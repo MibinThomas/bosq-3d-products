@@ -90,7 +90,7 @@ export function Model({ url, manifest }: ModelProps) {
             mat.alphaTest = 0.5; // cut-out holes, no sorting artefacts
             mat.transparent = false;
             mat.side = DoubleSide;
-            projectPatternInWorldSpace(mat, 30);
+            projectPatternInWorldSpace(mat, 120);
           } else if (role === "upholstery" || (role === "mesh" && merged.solid)) {
             mat.map = fabricMap();
             mat.alphaMap = null;
