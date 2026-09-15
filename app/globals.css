@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* BOSQ design tokens — sampled from bosq.ae */
+:root {
+  --ink: #282828;
+  --paper: #ffffff;
+  --surface: #f9f9f9;
+  --surface-2: #f4f4f4;
+  --line: #ebebeb;
+  --muted: #8a8a8a;
+  --accent: #f17423;
+  --accent-hover: #d9631a;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --font-sans: var(--font-brand), var(--font-arabic), "Hero New", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-brand), sans-serif;
+}
+
+/* bosq.ae button family */
+.btn {
+  @apply inline-flex h-10 min-w-[135px] cursor-pointer items-center justify-center gap-2 rounded-[4px] px-5 text-[12px] leading-none font-light tracking-[0.06em] uppercase whitespace-nowrap transition duration-200 hover:scale-[1.02] focus-visible:ring-[3px] focus-visible:ring-accent/30 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
+}
+.btn-dark {
+  @apply bg-ink text-white hover:bg-accent hover:text-white;
+}
+.btn-light {
+  @apply bg-surface text-ink hover:bg-accent hover:text-white;
+}
+.btn-accent {
+  @apply bg-accent text-white hover:bg-accent-hover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

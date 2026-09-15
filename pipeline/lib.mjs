@@ -1,0 +1,119 @@
+// Shared helpers for the BOSQ model pipeline.
+import { NodeIO, PropertyType } from "@gltf-transform/core";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import {
+  dedup,
+  flatten,
+  join,
+  meshopt,
+  prune,
+  quantize,
+  reorder,
+  simplify,
+  textureCompress,
+  weld,
+} from "@gltf-transform/functions";
+import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
+import sharp from "sharp";
+import fs from "node:fs";
+import path from "node:path";
+
+export const ROOT = path.resolve(import.meta.dirname, "..");
+export const SRC_DIR = path.join(ROOT, "models-src");
+export const WORK_DIR = path.join(ROOT, ".pipeline-work");
+export const OUT_DIR = path.join(ROOT, "public", "models");
+
+// Budgets from docs/IMPLEMENTATION_PLAN.md §5.2 — the pipeline fails a build that exceeds them.
+export const BUDGETS = {
+  high: { maxBytes: 3 * 1024 * 1024, maxTriangles: 150_000, textureSize: 2048 },
+  low: { maxBytes: 1 * 1024 * 1024, maxTriangles: 50_000, textureSize: 1024 },
+};
+
+export async function createIO() {
+  await MeshoptEncoder.ready;
+  await MeshoptSimplifier.ready;
+  return new NodeIO()
+    .registerExtensions(ALL_EXTENSIONS)
+    .registerDependencies({ "meshopt.encoder": MeshoptEncoder });
+}
+
+export function log(step, msg) {
+  console.log(`  [${step}] ${msg}`);
+}
+
+export function countTriangles(doc) {
+  let tris = 0;
+  for (const mesh of doc.getRoot().listMeshes()) {
+    for (const prim of mesh.listPrimitives()) {
+      const idx = prim.getIndices();
+      const n = idx ? idx.getCount() : prim.getAttribute("POSITION").getCount();
+      tris += n / 3;
+    }
+  }
+  return Math.round(tris);
+}
+
+export function bounds(doc) {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  for (const mesh of doc.getRoot().listMeshes()) {
+    for (const prim of mesh.listPrimitives()) {
+      const pos = prim.getAttribute("POSITION");
+      const pMin = pos.getMin([]);
+      const pMax = pos.getMax([]);
+      for (let i = 0; i < 3; i++) {
+        min[i] = Math.min(min[i], pMin[i]);
+        max[i] = Math.max(max[i], pMax[i]);
+      }
+    }
+  }
+  return { min, max, size: max.map((v, i) => v - min[i]) };
+}
+
+/**
+ * Optimise a glTF document in place for a given tier.
+ * @param {import('@gltf-transform/core').Document} doc
+ * @param {{ratio:number, error:number, textureSize:number, level?:'medium'|'high'}} opts
+ */
+export async function optimise(doc, opts) {
+  const { ratio, error, textureSize, level = "high" } = opts;
+  const before = countTriangles(doc);
+
+  await doc.transform(
+    // Never dedup materials: untextured sources have identical materials, but variants
+    // target them by name (Set1 = upholstery, Set2 = mesh, Set3 = frame).
+    dedup({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE] }),
+    // Keep UVs even when no texture references them yet — textures arrive later.
+    prune({ keepAttributes: true, keepLeaves: false }),
+    flatten(),
+    join({ keepNamed: true }), // keep material-named primitives separate (variants target them)
+    weld(),
+    simplify({ simplifier: MeshoptSimplifier, ratio, error, lockBorder: false }),
+    textureCompress({
+      encoder: sharp,
+      targetFormat: "webp",
+      resize: [textureSize, textureSize],
+      quality: 85,
+    }),
+    reorder({ encoder: MeshoptEncoder }),
+    quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12 }),
+    meshopt({ encoder: MeshoptEncoder, level }),
+  );
+
+  const after = countTriangles(doc);
+  log("simplify", `${before.toLocaleString()} → ${after.toLocaleString()} triangles (ratio ${ratio})`);
+  return { before, after };
+}
+
+export function ensureDir(p) {
+  fs.mkdirSync(p, { recursive: true });
+  return p;
+}
+
+export function fileSize(p) {
+  return fs.statSync(p).size;
+}
+
+export function fmtMB(bytes) {
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}

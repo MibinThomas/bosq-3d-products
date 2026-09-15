@@ -1,0 +1,26 @@
+{
+  "name": { "en": "Orca High Back Ergonomic Office Chair", "ar": "كرسي أوركا المكتبي المريح بظهر مرتفع" },
+  "description": {
+    "en": "High back ergonomic office chair with adjustable headrest, 4D armrests and a five-star aluminium base on castors."
+  },
+  "category": "chairs",
+  "dimensionsLabel": "W74 × D78 × H130 cm",
+  "camera": { "position": [1.75, 1.15, 2.25], "target": [0, 0.6, 0], "fov": 32 },
+  "materials": {
+    "Set1.002": { "role": "upholstery" },
+    "Set1.003": { "role": "upholstery" },
+    "Set2.002": { "role": "mesh" },
+    "Set2.003": { "role": "mesh" },
+    "Set3.002": { "role": "frame" },
+    "Set3.004": { "role": "frame" }
+  },
+  "variants": [
+    { "sku": "ORC-HB-APPLE-GREEN", "color": "apple-green", "label": "Apple Green", "swatch": "#7BA23F",
+      "materials": { "upholstery": { "color": "#7BA23F" } } },
+    { "sku": "ORC-HB-BLACK", "color": "black", "label": "Black", "swatch": "#1E1F22",
+      "materials": { "upholstery": { "color": "#1E1F22" } } },
+    { "sku": "ORC-HB-GREY", "color": "grey", "label": "Grey", "swatch": "#7D8189",
+      "materials": { "upholstery": { "color": "#7D8189" } } }
+  ],
+  "productUrl": "https://bosq.ae/en/products/orca?sku=ORC-HB-APPLE-GREEN&attr_color=apple-green"
+}
