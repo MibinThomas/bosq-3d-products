@@ -1,6 +1,6 @@
 {
   "slug": "orca",
-  "version": 4,
+  "version": 5,
   "name": {
     "en": "Orca High Back Ergonomic Office Chair",
     "ar": "كرسي أوركا المكتبي المريح بظهر مرتفع"
@@ -10,12 +10,12 @@
   },
   "category": "chairs",
   "model": {
-    "high": "/models/orca/v4/orca.glb",
-    "low": "/models/orca/v4/orca.lod1.glb",
+    "high": "/models/orca/v5/orca.glb",
+    "low": "/models/orca/v5/orca.lod1.glb",
     "usdz": null
   },
-  "poster": "/models/orca/v4/poster.webp",
-  "og": "/models/orca/v4/og.png",
+  "poster": "/models/orca/v5/poster.webp",
+  "og": "/models/orca/v5/og.png",
   "bounds": {
     "w": 0.744,
     "d": 0.766,
@@ -135,16 +135,16 @@
       "sizeBytes": 17488972
     },
     "high": {
-      "triangles": 134988,
-      "sizeBytes": 1094824,
+      "triangles": 134989,
+      "sizeBytes": 1098304,
       "file": "orca.glb"
     },
     "low": {
-      "triangles": 48875,
-      "sizeBytes": 528192,
+      "triangles": 48429,
+      "sizeBytes": 526532,
       "file": "orca.lod1.glb"
     }
   },
   "productUrl": "https://bosq.ae/en/products/orca?sku=ORC-HB-APPLE-GREEN&attr_color=apple-green",
-  "generatedAt": "2026-09-15T10:59:07.142Z"
+  "generatedAt": "2026-09-15T11:14:58.469Z"
 }

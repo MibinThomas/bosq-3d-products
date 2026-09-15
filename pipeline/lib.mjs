@@ -122,12 +122,14 @@ export function fmtMB(bytes) {
  * Split a material's triangles into a new material by height, so parts an artist merged into one
  * slot (e.g. base star + arms, or arm stem + arm pad) can be coloured separately. Triangles with
  * every vertex at or below `belowY` — or at or above `aboveY` — (metres, model space) move to `into`.
+ * `minNormalY` additionally requires the face to point upward (e.g. 0.3 = top surfaces only), so an
+ * arm pad's top can be separated from its underside.
  * @param {import('@gltf-transform/core').Document} doc
- * @param {{material:string, belowY?:number, aboveY?:number, into:string}[]} splits
+ * @param {{material:string, belowY?:number, aboveY?:number, minNormalY?:number, into:string}[]} splits
  */
 export function splitMaterialsByHeight(doc, splits) {
   const root = doc.getRoot();
-  for (const { material, belowY, aboveY, into } of splits) {
+  for (const { material, belowY, aboveY, minNormalY, into } of splits) {
     const target = root.listMaterials().find((m) => m.getName() === material);
     if (!target) {
       log("split", `material ${material} not found — skipped`);
@@ -145,11 +147,21 @@ export function splitMaterialsByHeight(doc, splits) {
         const above = [];
         const v = [0, 0, 0];
         const inRange = (y) => (belowY !== undefined ? y <= belowY : y >= aboveY);
+        const a = [0, 0, 0], b = [0, 0, 0], c = [0, 0, 0];
         for (let i = 0; i < arr.length; i += 3) {
           let move = true;
           for (let k = 0; k < 3 && move; k++) {
             pos.getElement(arr[i + k], v);
             if (!inRange(v[1])) move = false;
+          }
+          if (move && minNormalY !== undefined) {
+            // Face normal from winding: (b - a) × (c - a); keep only faces tilted upward enough.
+            pos.getElement(arr[i], a); pos.getElement(arr[i + 1], b); pos.getElement(arr[i + 2], c);
+            const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+            const wx = c[0] - a[0], wy = c[1] - a[1], wz = c[2] - a[2];
+            const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+            const len = Math.hypot(nx, ny, nz) || 1;
+            if (ny / len < minNormalY) move = false;
           }
           (move ? below : above).push(arr[i], arr[i + 1], arr[i + 2]);
         }
@@ -162,6 +174,6 @@ export function splitMaterialsByHeight(doc, splits) {
         moved += below.length / 3;
       }
     }
-    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles at y ${belowY !== undefined ? `≤ ${belowY}` : `≥ ${aboveY}`} m`);
+    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles at y ${belowY !== undefined ? `≤ ${belowY}` : `≥ ${aboveY}`} m${minNormalY !== undefined ? `, facing up ≥ ${minNormalY}` : ""}`);
   }
 }

@@ -95,7 +95,8 @@ export function Model({ url, manifest }: ModelProps) {
             mat.map = fabricMap();
             mat.alphaMap = null;
             mat.alphaTest = 0;
-            mat.side = FrontSide;
+            // The back panel is a single surface: keep it double-sided so it reads as fabric from behind too.
+            mat.side = role === "mesh" ? DoubleSide : FrontSide;
             projectPatternInWorldSpace(mat, 24);
           } else {
             clearPatternProjection(mat);
