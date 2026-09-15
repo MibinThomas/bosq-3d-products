@@ -200,3 +200,109 @@ export function splitMaterialsByHeight(doc, splits) {
     log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles (${rule})`);
   }
 }
+
+/**
+ * Two-tone castor wheels: for every connected component of `material` below `maxY`, find the wheel
+ * axle (axis of least spread) and move the outer `tyreFraction` of the radius to `into`, leaving
+ * the hub in the original material.
+ * @param {import('@gltf-transform/core').Document} doc
+ * @param {{material:string, into:string, maxY?:number, tyreFraction?:number}} opts
+ */
+export function splitWheelTyres(doc, { material, into, maxY = 0.1, tyreFraction = 0.78 }) {
+  const root = doc.getRoot();
+  const target = root.listMaterials().find((m) => m.getName() === material);
+  if (!target) {
+    log("tyres", `material ${material} not found — skipped`);
+    return;
+  }
+  const tyreMat = target.clone().setName(into);
+  let moved = 0;
+  for (const mesh of root.listMeshes()) {
+    for (const prim of mesh.listPrimitives()) {
+      if (prim.getMaterial() !== target) continue;
+      const pos = prim.getAttribute("POSITION");
+      const idx = prim.getIndices();
+      const arr = idx.getArray();
+      const n = pos.getCount();
+      // Union-find over welded positions → connected components.
+      const key = new Map();
+      const id = new Int32Array(n);
+      const v = [0, 0, 0];
+      for (let i = 0; i < n; i++) {
+        pos.getElement(i, v);
+        const k = `${v[0].toFixed(4)},${v[1].toFixed(4)},${v[2].toFixed(4)}`;
+        if (!key.has(k)) key.set(k, i);
+        id[i] = key.get(k);
+      }
+      const parent = new Int32Array(n);
+      for (let i = 0; i < n; i++) parent[i] = i;
+      const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+      const unite = (a, b) => { a = find(a); b = find(b); if (a !== b) parent[a] = b; };
+      for (let i = 0; i < arr.length; i += 3) { unite(id[arr[i]], id[arr[i + 1]]); unite(id[arr[i]], id[arr[i + 2]]); }
+      // Per component: centroid, covariance → axle (smallest-variance axis), max in-plane radius.
+      const comps = new Map();
+      for (let i = 0; i < n; i++) {
+        pos.getElement(i, v);
+        const r = find(id[i]);
+        let c = comps.get(r);
+        if (!c) { c = { pts: [], maxY: -Infinity }; comps.set(r, c); }
+        c.pts.push([v[0], v[1], v[2]]);
+        c.maxY = Math.max(c.maxY, v[1]);
+      }
+      const isTyre = new Uint8Array(n);
+      for (const c of comps.values()) {
+        if (c.maxY > maxY || c.pts.length < 50) continue;
+        const m = [0, 0, 0];
+        for (const p of c.pts) { m[0] += p[0]; m[1] += p[1]; m[2] += p[2]; }
+        m[0] /= c.pts.length; m[1] /= c.pts.length; m[2] /= c.pts.length;
+        const C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        for (const p of c.pts) {
+          const d = [p[0] - m[0], p[1] - m[1], p[2] - m[2]];
+          for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) C[a][b] += d[a] * d[b];
+        }
+        // Smallest eigenvector via power iteration on (trace·I − C).
+        const tr = C[0][0] + C[1][1] + C[2][2];
+        const M = C.map((row, a) => row.map((x, b) => (a === b ? tr : 0) - x));
+        let ax = [0.3, 0.5, 0.8];
+        for (let it = 0; it < 60; it++) {
+          const y = [0, 1, 2].map((a) => M[a][0] * ax[0] + M[a][1] * ax[1] + M[a][2] * ax[2]);
+          const len = Math.hypot(...y) || 1;
+          ax = y.map((x) => x / len);
+        }
+        c.axle = ax; c.centre = m;
+        let rMax = 0;
+        c.r = c.pts.map((p) => {
+          const d = [p[0] - m[0], p[1] - m[1], p[2] - m[2]];
+          const along = d[0] * ax[0] + d[1] * ax[1] + d[2] * ax[2];
+          const r = Math.hypot(d[0] - along * ax[0], d[1] - along * ax[1], d[2] - along * ax[2]);
+          rMax = Math.max(rMax, r);
+          return r;
+        });
+        c.rMax = rMax;
+      }
+      // Mark vertices on the tyre.
+      const cursor = new Map();
+      for (let i = 0; i < n; i++) {
+        const c = comps.get(find(id[i]));
+        if (!c || !c.r) continue;
+        const k = cursor.get(c) ?? 0;
+        cursor.set(c, k + 1);
+        if (c.r[k] >= c.rMax * tyreFraction) isTyre[i] = 1;
+      }
+      const moving = [];
+      const staying = [];
+      for (let i = 0; i < arr.length; i += 3) {
+        const t = isTyre[arr[i]] && isTyre[arr[i + 1]] && isTyre[arr[i + 2]];
+        (t ? moving : staying).push(arr[i], arr[i + 1], arr[i + 2]);
+      }
+      if (moving.length === 0) continue;
+      const newIdx = doc.createAccessor().setType("SCALAR").setArray(new Uint32Array(moving)).setBuffer(idx.getBuffer());
+      const newPrim = doc.createPrimitive().setMode(prim.getMode()).setMaterial(tyreMat).setIndices(newIdx);
+      for (const sem of prim.listSemantics()) newPrim.setAttribute(sem, prim.getAttribute(sem));
+      idx.setArray(new Uint32Array(staying));
+      mesh.addPrimitive(newPrim);
+      moved += moving.length / 3;
+    }
+  }
+  log("tyres", `${material} → ${into}: ${moved.toLocaleString()} triangles (outer ${Math.round((1 - tyreFraction) * 100)}% of wheel radius)`);
+}

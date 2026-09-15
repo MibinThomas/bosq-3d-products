@@ -1,6 +1,6 @@
 {
   "slug": "orca",
-  "version": 7,
+  "version": 8,
   "name": {
     "en": "Orca High Back Ergonomic Office Chair",
     "ar": "كرسي أوركا المكتبي المريح بظهر مرتفع"
@@ -10,12 +10,12 @@
   },
   "category": "chairs",
   "model": {
-    "high": "/models/orca/v7/orca.glb",
-    "low": "/models/orca/v7/orca.lod1.glb",
+    "high": "/models/orca/v8/orca.glb",
+    "low": "/models/orca/v8/orca.lod1.glb",
     "usdz": null
   },
-  "poster": "/models/orca/v7/poster.webp",
-  "og": "/models/orca/v7/og.png",
+  "poster": "/models/orca/v8/poster.webp",
+  "og": "/models/orca/v8/og.png",
   "bounds": {
     "w": 0.744,
     "d": 0.766,
@@ -71,6 +71,9 @@
     "Castor": {
       "role": "base"
     },
+    "Tyre": {
+      "role": "tyre"
+    },
     "Lever": {
       "role": "plastic"
     },
@@ -84,6 +87,12 @@
       "color": "apple-green",
       "label": "Apple Green",
       "swatch": "#8DB600",
+      "wheelTyres": {
+        "material": "Castor",
+        "into": "Tyre",
+        "maxY": 0.06,
+        "tyreFraction": 0.78
+      },
       "materials": {
         "upholstery": {
           "color": "#95C234"
@@ -98,6 +107,12 @@
       "color": "candy-red",
       "label": "Candy Red",
       "swatch": "#D9262C",
+      "wheelTyres": {
+        "material": "Castor",
+        "into": "Tyre",
+        "maxY": 0.06,
+        "tyreFraction": 0.78
+      },
       "materials": {
         "upholstery": {
           "color": "#E62E32"
@@ -112,6 +127,12 @@
       "color": "echo-green",
       "label": "Echo Green",
       "swatch": "#8F9B3C",
+      "wheelTyres": {
+        "material": "Castor",
+        "into": "Tyre",
+        "maxY": 0.06,
+        "tyreFraction": 0.78
+      },
       "materials": {
         "upholstery": {
           "color": "#A3AF47"
@@ -127,6 +148,12 @@
       "color": "pure-white",
       "label": "Pure White",
       "swatch": "#EDEDED",
+      "wheelTyres": {
+        "material": "Castor",
+        "into": "Tyre",
+        "maxY": 0.06,
+        "tyreFraction": 0.78
+      },
       "materials": {
         "upholstery": {
           "color": "#E2E4E7"
@@ -144,16 +171,16 @@
       "sizeBytes": 17488972
     },
     "high": {
-      "triangles": 138018,
-      "sizeBytes": 1086124,
+      "triangles": 138017,
+      "sizeBytes": 1096976,
       "file": "orca.glb"
     },
     "low": {
-      "triangles": 54096,
-      "sizeBytes": 540564,
+      "triangles": 54230,
+      "sizeBytes": 548208,
       "file": "orca.lod1.glb"
     }
   },
   "productUrl": "https://bosq.ae/en/products/orca?sku=ORC-HB-APPLE-GREEN&attr_color=apple-green",
-  "generatedAt": "2026-09-15T13:54:53.727Z"
+  "generatedAt": "2026-09-15T14:11:55.977Z"
 }

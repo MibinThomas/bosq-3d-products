@@ -14,6 +14,7 @@
     { "material": "Hardware", "maxY": 0.09, "minRadius": 0.15, "into": "Castor" },
     { "material": "Set1.002", "minY": 0.34, "maxY": 0.402, "minX": -0.05, "maxX": 0.03, "minZ": 0.03, "maxZ": 0.24, "into": "Lever" }
   ],
+  "wheelTyres": { "material": "Castor", "into": "Tyre", "maxY": 0.06, "tyreFraction": 0.78 },
   "materials": {
     "Set1.002": { "role": "frame" },
     "Base": { "role": "base" },
@@ -25,18 +26,23 @@
     "Hardware": { "role": "hardware" },
     "Piston": { "role": "steel" },
     "Castor": { "role": "base" },
+    "Tyre": { "role": "tyre" },
     "Lever": { "role": "plastic" },
     "Set3.004": { "role": "base" }
   },
   "variants": [
     { "sku": "ORC-HB-APPLE-GREEN", "color": "apple-green", "label": "Apple Green", "swatch": "#8DB600",
-      "materials": { "upholstery": { "color": "#95C234" }, "mesh": { "color": "#A6D63A" } } },
+      "wheelTyres": { "material": "Castor", "into": "Tyre", "maxY": 0.06, "tyreFraction": 0.78 },
+  "materials": { "upholstery": { "color": "#95C234" }, "mesh": { "color": "#A6D63A" } } },
     { "sku": "ORC-HB-CANDY-RED", "color": "candy-red", "label": "Candy Red", "swatch": "#D9262C",
-      "materials": { "upholstery": { "color": "#E62E32" }, "mesh": { "color": "#F04545" } } },
+      "wheelTyres": { "material": "Castor", "into": "Tyre", "maxY": 0.06, "tyreFraction": 0.78 },
+  "materials": { "upholstery": { "color": "#E62E32" }, "mesh": { "color": "#F04545" } } },
     { "sku": "ORC-HB-ECHO-GREEN", "color": "echo-green", "label": "Echo Green", "swatch": "#8F9B3C",
-      "materials": { "upholstery": { "color": "#A3AF47" }, "mesh": { "color": "#A6B24A", "solid": true } } },
+      "wheelTyres": { "material": "Castor", "into": "Tyre", "maxY": 0.06, "tyreFraction": 0.78 },
+  "materials": { "upholstery": { "color": "#A3AF47" }, "mesh": { "color": "#A6B24A", "solid": true } } },
     { "sku": "ORC-HB-PURE-WHITE", "color": "pure-white", "label": "Pure White", "swatch": "#EDEDED",
-      "materials": { "upholstery": { "color": "#E2E4E7" }, "mesh": { "color": "#F1F2F4" } } }
+      "wheelTyres": { "material": "Castor", "into": "Tyre", "maxY": 0.06, "tyreFraction": 0.78 },
+  "materials": { "upholstery": { "color": "#E2E4E7" }, "mesh": { "color": "#F1F2F4" } } }
   ],
   "productUrl": "https://bosq.ae/en/products/orca?sku=ORC-HB-APPLE-GREEN&attr_color=apple-green"
 }

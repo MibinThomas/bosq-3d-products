@@ -25,6 +25,7 @@ import {
   log,
   optimise,
   splitMaterialsByHeight,
+  splitWheelTyres,
 } from "./lib.mjs";
 
 const args = process.argv.slice(2);
@@ -96,6 +97,7 @@ for (const tier of tiers) {
   console.log(`\n· ${tier.key} tier`);
   const doc = await io.read(rawGlb);
   if (product.splits?.length) splitMaterialsByHeight(doc, product.splits);
+  if (product.wheelTyres) splitWheelTyres(doc, product.wheelTyres);
   const { after } = await optimise(doc, {
     ratio: tier.ratio,
     error: tier.error,

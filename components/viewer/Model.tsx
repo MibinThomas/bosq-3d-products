@@ -19,6 +19,7 @@ const ROLE_DEFAULTS: Record<MaterialRole, MaterialOverride> = {
   hardware: { color: "#1C1C1E", roughness: 0.35, metalness: 0.4 }, // black gas lift, mechanism, castor tyres
   polished: { color: "#D9DCE0", roughness: 0.18, metalness: 0.45 }, // shiny light-grey armrest pads
   steel: { color: "#C8CBCF", roughness: 0.25, metalness: 0.95 }, // gas-lift piston
+  tyre: { color: "#74777C", roughness: 0.75, metalness: 0 }, // castor tread — darker grey than the hub
   plastic: { color: "#1F2124", roughness: 0.6, metalness: 0 }, // black nylon (height-adjust lever)
   wood: { color: "#8B6A4A", roughness: 0.6, metalness: 0 },
   glass: { color: "#DDE6EE", roughness: 0.05, metalness: 0 },
