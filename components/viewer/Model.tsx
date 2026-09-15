@@ -87,14 +87,20 @@ export function Model({ url, manifest }: ModelProps) {
           if (role === "mesh" && !merged.solid) {
             mat.map = meshShadeMap();
             mat.alphaMap = meshAlphaMap();
-            mat.alphaTest = 0.5; // cut-out holes, no sorting artefacts
-            mat.transparent = false;
+            // Blended, not alpha-tested: the ~2 mm weave is sub-pixel at normal viewing distance, and
+            // blending averages it to a semi-transparent panel (like real mesh) instead of collapsing
+            // to solid or vanishing at the alpha-test threshold. Near-zero alpha is still discarded and
+            // depth is written so the panel sorts cleanly against the frame and seat.
+            mat.alphaTest = 0.05;
+            mat.transparent = true;
+            mat.depthWrite = true;
             mat.side = DoubleSide;
             projectPatternInWorldSpace(mat, 120);
           } else if (role === "upholstery" || (role === "mesh" && merged.solid)) {
             mat.map = fabricMap();
             mat.alphaMap = null;
             mat.alphaTest = 0;
+            mat.transparent = false;
             // The back panel is a single surface: keep it double-sided so it reads as fabric from behind too.
             mat.side = role === "mesh" ? DoubleSide : FrontSide;
             projectPatternInWorldSpace(mat, 24);
@@ -103,6 +109,7 @@ export function Model({ url, manifest }: ModelProps) {
             mat.map = null;
             mat.alphaMap = null;
             mat.alphaTest = 0;
+            mat.transparent = false;
             mat.side = FrontSide;
           }
         }
