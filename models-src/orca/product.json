@@ -8,11 +8,13 @@
   "camera": { "position": [1.75, 1.15, 2.25], "target": [0, 0.6, 0], "fov": 32 },
   "splits": [
     { "material": "Set1.002", "belowY": 0.3, "into": "Base" },
+    { "material": "Set1.002", "aboveY": 0.705, "into": "ArmPad" },
     { "material": "Set3.002", "belowY": 0.42, "into": "Hardware" }
   ],
   "materials": {
     "Set1.002": { "role": "frame" },
     "Base": { "role": "base" },
+    "ArmPad": { "role": "polished" },
     "Set1.003": { "role": "upholstery" },
     "Set2.002": { "role": "frame" },
     "Set2.003": { "role": "mesh" },

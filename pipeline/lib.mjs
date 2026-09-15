@@ -120,14 +120,14 @@ export function fmtMB(bytes) {
 
 /**
  * Split a material's triangles into a new material by height, so parts an artist merged into one
- * slot (e.g. base star + arms) can be coloured separately. Triangles with every vertex at or below
- * `y` (metres, model space) move to `newMaterialName`; the rest stay.
+ * slot (e.g. base star + arms, or arm stem + arm pad) can be coloured separately. Triangles with
+ * every vertex at or below `belowY` — or at or above `aboveY` — (metres, model space) move to `into`.
  * @param {import('@gltf-transform/core').Document} doc
- * @param {{material:string, belowY:number, into:string}[]} splits
+ * @param {{material:string, belowY?:number, aboveY?:number, into:string}[]} splits
  */
 export function splitMaterialsByHeight(doc, splits) {
   const root = doc.getRoot();
-  for (const { material, belowY, into } of splits) {
+  for (const { material, belowY, aboveY, into } of splits) {
     const target = root.listMaterials().find((m) => m.getName() === material);
     if (!target) {
       log("split", `material ${material} not found — skipped`);
@@ -144,13 +144,14 @@ export function splitMaterialsByHeight(doc, splits) {
         const below = [];
         const above = [];
         const v = [0, 0, 0];
+        const inRange = (y) => (belowY !== undefined ? y <= belowY : y >= aboveY);
         for (let i = 0; i < arr.length; i += 3) {
-          let allBelow = true;
-          for (let k = 0; k < 3 && allBelow; k++) {
+          let move = true;
+          for (let k = 0; k < 3 && move; k++) {
             pos.getElement(arr[i + k], v);
-            if (v[1] > belowY) allBelow = false;
+            if (!inRange(v[1])) move = false;
           }
-          (allBelow ? below : above).push(arr[i], arr[i + 1], arr[i + 2]);
+          (move ? below : above).push(arr[i], arr[i + 1], arr[i + 2]);
         }
         if (below.length === 0) continue;
         const newIdx = doc.createAccessor().setType("SCALAR").setArray(new Uint32Array(below)).setBuffer(idx.getBuffer());
@@ -161,6 +162,6 @@ export function splitMaterialsByHeight(doc, splits) {
         moved += below.length / 3;
       }
     }
-    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles at y ≤ ${belowY} m`);
+    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles at y ${belowY !== undefined ? `≤ ${belowY}` : `≥ ${aboveY}`} m`);
   }
 }

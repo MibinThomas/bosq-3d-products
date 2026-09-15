@@ -5,7 +5,7 @@ export type Locale = "en" | "ar";
 export type LocalisedText = Partial<Record<Locale, string>> & { en: string };
 
 /** Material roles — what a GLB material *is*, independent of its export name. */
-export type MaterialRole = "upholstery" | "mesh" | "frame" | "base" | "hardware" | "plastic" | "wood" | "glass" | "other";
+export type MaterialRole = "upholstery" | "mesh" | "frame" | "base" | "hardware" | "polished" | "plastic" | "wood" | "glass" | "other";
 
 export interface MaterialOverride {
   color?: string; // hex
