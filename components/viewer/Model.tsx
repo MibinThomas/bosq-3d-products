@@ -95,7 +95,7 @@ export function Model({ url, manifest }: ModelProps) {
             mat.transparent = true;
             mat.depthWrite = true;
             mat.side = DoubleSide;
-            projectPatternInWorldSpace(mat, 120);
+            projectPatternInWorldSpace(mat, 60);
           } else if (role === "upholstery" || (role === "mesh" && merged.solid)) {
             mat.map = fabricMap();
             mat.alphaMap = null;
