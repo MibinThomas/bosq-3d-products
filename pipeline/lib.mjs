@@ -117,3 +117,50 @@ export function fileSize(p) {
 export function fmtMB(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
+
+/**
+ * Split a material's triangles into a new material by height, so parts an artist merged into one
+ * slot (e.g. base star + arms) can be coloured separately. Triangles with every vertex at or below
+ * `y` (metres, model space) move to `newMaterialName`; the rest stay.
+ * @param {import('@gltf-transform/core').Document} doc
+ * @param {{material:string, belowY:number, into:string}[]} splits
+ */
+export function splitMaterialsByHeight(doc, splits) {
+  const root = doc.getRoot();
+  for (const { material, belowY, into } of splits) {
+    const target = root.listMaterials().find((m) => m.getName() === material);
+    if (!target) {
+      log("split", `material ${material} not found — skipped`);
+      continue;
+    }
+    const newMat = target.clone().setName(into);
+    let moved = 0;
+    for (const mesh of root.listMeshes()) {
+      for (const prim of mesh.listPrimitives()) {
+        if (prim.getMaterial() !== target) continue;
+        const pos = prim.getAttribute("POSITION");
+        const idx = prim.getIndices();
+        const arr = idx.getArray();
+        const below = [];
+        const above = [];
+        const v = [0, 0, 0];
+        for (let i = 0; i < arr.length; i += 3) {
+          let allBelow = true;
+          for (let k = 0; k < 3 && allBelow; k++) {
+            pos.getElement(arr[i + k], v);
+            if (v[1] > belowY) allBelow = false;
+          }
+          (allBelow ? below : above).push(arr[i], arr[i + 1], arr[i + 2]);
+        }
+        if (below.length === 0) continue;
+        const newIdx = doc.createAccessor().setType("SCALAR").setArray(new Uint32Array(below)).setBuffer(idx.getBuffer());
+        const newPrim = doc.createPrimitive().setMode(prim.getMode()).setMaterial(newMat).setIndices(newIdx);
+        for (const sem of prim.listSemantics()) newPrim.setAttribute(sem, prim.getAttribute(sem));
+        idx.setArray(new Uint32Array(above));
+        mesh.addPrimitive(newPrim);
+        moved += below.length / 3;
+      }
+    }
+    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles at y ≤ ${belowY} m`);
+  }
+}

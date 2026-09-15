@@ -24,6 +24,7 @@ import {
   fmtMB,
   log,
   optimise,
+  splitMaterialsByHeight,
 } from "./lib.mjs";
 
 const args = process.argv.slice(2);
@@ -94,6 +95,7 @@ const stats = {};
 for (const tier of tiers) {
   console.log(`\n· ${tier.key} tier`);
   const doc = await io.read(rawGlb);
+  if (product.splits?.length) splitMaterialsByHeight(doc, product.splits);
   const { after } = await optimise(doc, {
     ratio: tier.ratio,
     error: tier.error,

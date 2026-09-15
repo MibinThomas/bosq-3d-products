@@ -6,13 +6,19 @@
   "category": "chairs",
   "dimensionsLabel": "W62 × D68 × H116–126 cm",
   "camera": { "position": [1.75, 1.15, 2.25], "target": [0, 0.6, 0], "fov": 32 },
+  "splits": [
+    { "material": "Set1.002", "belowY": 0.3, "into": "Base" },
+    { "material": "Set3.002", "belowY": 0.42, "into": "Hardware" }
+  ],
   "materials": {
     "Set1.002": { "role": "frame" },
+    "Base": { "role": "base" },
     "Set1.003": { "role": "upholstery" },
     "Set2.002": { "role": "frame" },
     "Set2.003": { "role": "mesh" },
-    "Set3.002": { "role": "frame" },
-    "Set3.004": { "role": "frame" }
+    "Set3.002": { "role": "base" },
+    "Hardware": { "role": "hardware" },
+    "Set3.004": { "role": "base" }
   },
   "variants": [
     { "sku": "ORC-HB-APPLE-GREEN", "color": "apple-green", "label": "Apple Green", "swatch": "#8DB600",
