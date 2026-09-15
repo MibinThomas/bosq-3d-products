@@ -119,17 +119,25 @@ export function fmtMB(bytes) {
 }
 
 /**
- * Split a material's triangles into a new material by height, so parts an artist merged into one
- * slot (e.g. base star + arms, or arm stem + arm pad) can be coloured separately. Triangles with
- * every vertex at or below `belowY` — or at or above `aboveY` — (metres, model space) move to `into`.
- * `minNormalY` additionally requires the face to point upward (e.g. 0.3 = top surfaces only), so an
- * arm pad's top can be separated from its underside.
+ * Split a material's triangles into a new material by position, so parts an artist merged into one
+ * slot (base star + arms, gas lift + castors, lever + frame) can be coloured separately.
+ * A triangle moves to `into` when every vertex satisfies all given tests:
+ *   minY / maxY        height range in metres (aliases: aboveY = minY, belowY = maxY)
+ *   minX / maxX / minZ / maxZ   bounding box in metres (model space)
+ *   minRadius / maxRadius   horizontal distance from the model's centre axis, in metres
+ *   minNormalY         face must point upward at least this much (0.3 = top surfaces only)
  * @param {import('@gltf-transform/core').Document} doc
- * @param {{material:string, belowY?:number, aboveY?:number, minNormalY?:number, into:string}[]} splits
+ * @param {{material:string, into:string, minY?:number, maxY?:number, aboveY?:number, belowY?:number, minX?:number, maxX?:number, minZ?:number, maxZ?:number, minRadius?:number, maxRadius?:number, minNormalY?:number}[]} splits
  */
 export function splitMaterialsByHeight(doc, splits) {
   const root = doc.getRoot();
-  for (const { material, belowY, aboveY, minNormalY, into } of splits) {
+  const { min, max } = bounds(doc);
+  const cx = (min[0] + max[0]) / 2;
+  const cz = (min[2] + max[2]) / 2;
+  for (const split of splits) {
+    const { material, into, minNormalY, minRadius, maxRadius, minX, maxX, minZ, maxZ } = split;
+    const minY = split.minY ?? split.aboveY;
+    const maxY = split.maxY ?? split.belowY;
     const target = root.listMaterials().find((m) => m.getName() === material);
     if (!target) {
       log("split", `material ${material} not found — skipped`);
@@ -137,43 +145,58 @@ export function splitMaterialsByHeight(doc, splits) {
     }
     const newMat = target.clone().setName(into);
     let moved = 0;
+    const passes = (v) => {
+      if (minY !== undefined && v[1] < minY) return false;
+      if (maxY !== undefined && v[1] > maxY) return false;
+      if (minX !== undefined && v[0] < minX) return false;
+      if (maxX !== undefined && v[0] > maxX) return false;
+      if (minZ !== undefined && v[2] < minZ) return false;
+      if (maxZ !== undefined && v[2] > maxZ) return false;
+      if (minRadius !== undefined || maxRadius !== undefined) {
+        const r = Math.hypot(v[0] - cx, v[2] - cz);
+        if (minRadius !== undefined && r < minRadius) return false;
+        if (maxRadius !== undefined && r > maxRadius) return false;
+      }
+      return true;
+    };
     for (const mesh of root.listMeshes()) {
       for (const prim of mesh.listPrimitives()) {
         if (prim.getMaterial() !== target) continue;
         const pos = prim.getAttribute("POSITION");
         const idx = prim.getIndices();
         const arr = idx.getArray();
-        const below = [];
-        const above = [];
-        const v = [0, 0, 0];
-        const inRange = (y) => (belowY !== undefined ? y <= belowY : y >= aboveY);
+        const moving = [];
+        const staying = [];
         const a = [0, 0, 0], b = [0, 0, 0], c = [0, 0, 0];
         for (let i = 0; i < arr.length; i += 3) {
-          let move = true;
-          for (let k = 0; k < 3 && move; k++) {
-            pos.getElement(arr[i + k], v);
-            if (!inRange(v[1])) move = false;
-          }
+          pos.getElement(arr[i], a); pos.getElement(arr[i + 1], b); pos.getElement(arr[i + 2], c);
+          let move = passes(a) && passes(b) && passes(c);
           if (move && minNormalY !== undefined) {
             // Face normal from winding: (b - a) × (c - a); keep only faces tilted upward enough.
-            pos.getElement(arr[i], a); pos.getElement(arr[i + 1], b); pos.getElement(arr[i + 2], c);
             const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
             const wx = c[0] - a[0], wy = c[1] - a[1], wz = c[2] - a[2];
             const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
             const len = Math.hypot(nx, ny, nz) || 1;
             if (ny / len < minNormalY) move = false;
           }
-          (move ? below : above).push(arr[i], arr[i + 1], arr[i + 2]);
+          (move ? moving : staying).push(arr[i], arr[i + 1], arr[i + 2]);
         }
-        if (below.length === 0) continue;
-        const newIdx = doc.createAccessor().setType("SCALAR").setArray(new Uint32Array(below)).setBuffer(idx.getBuffer());
+        if (moving.length === 0) continue;
+        const newIdx = doc.createAccessor().setType("SCALAR").setArray(new Uint32Array(moving)).setBuffer(idx.getBuffer());
         const newPrim = doc.createPrimitive().setMode(prim.getMode()).setMaterial(newMat).setIndices(newIdx);
         for (const sem of prim.listSemantics()) newPrim.setAttribute(sem, prim.getAttribute(sem));
-        idx.setArray(new Uint32Array(above));
+        idx.setArray(new Uint32Array(staying));
         mesh.addPrimitive(newPrim);
-        moved += below.length / 3;
+        moved += moving.length / 3;
       }
     }
-    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles at y ${belowY !== undefined ? `≤ ${belowY}` : `≥ ${aboveY}`} m${minNormalY !== undefined ? `, facing up ≥ ${minNormalY}` : ""}`);
+    const rule = [
+      minY !== undefined && `y ≥ ${minY}`, maxY !== undefined && `y ≤ ${maxY}`,
+      minX !== undefined && `x ≥ ${minX}`, maxX !== undefined && `x ≤ ${maxX}`,
+      minZ !== undefined && `z ≥ ${minZ}`, maxZ !== undefined && `z ≤ ${maxZ}`,
+      minRadius !== undefined && `r ≥ ${minRadius}`, maxRadius !== undefined && `r ≤ ${maxRadius}`,
+      minNormalY !== undefined && `facing up ≥ ${minNormalY}`,
+    ].filter(Boolean).join(", ");
+    log("split", `${material} → ${into}: ${moved.toLocaleString()} triangles (${rule})`);
   }
 }

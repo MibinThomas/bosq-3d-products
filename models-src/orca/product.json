@@ -9,7 +9,9 @@
   "splits": [
     { "material": "Set1.002", "belowY": 0.3, "into": "Base" },
     { "material": "Set1.002", "aboveY": 0.705, "minNormalY": 0.35, "into": "ArmPad" },
-    { "material": "Set3.002", "belowY": 0.42, "into": "Hardware" }
+    { "material": "Set3.002", "belowY": 0.42, "into": "Hardware" },
+    { "material": "Hardware", "minY": 0.30, "maxY": 0.375, "maxRadius": 0.045, "into": "Piston" },
+    { "material": "Set1.002", "minY": 0.34, "maxY": 0.402, "minX": -0.05, "maxX": 0.03, "minZ": 0.03, "maxZ": 0.24, "into": "Lever" }
   ],
   "materials": {
     "Set1.002": { "role": "frame" },
@@ -20,6 +22,8 @@
     "Set2.003": { "role": "mesh" },
     "Set3.002": { "role": "base" },
     "Hardware": { "role": "hardware" },
+    "Piston": { "role": "steel" },
+    "Lever": { "role": "plastic" },
     "Set3.004": { "role": "base" }
   },
   "variants": [

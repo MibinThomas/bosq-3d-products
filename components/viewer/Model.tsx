@@ -18,7 +18,8 @@ const ROLE_DEFAULTS: Record<MaterialRole, MaterialOverride> = {
   base: { color: "#BEC1C5", roughness: 0.4, metalness: 0.25 }, // grey nylon / aluminium base star, lumbar ribs
   hardware: { color: "#1C1C1E", roughness: 0.35, metalness: 0.4 }, // black gas lift, mechanism, castor tyres
   polished: { color: "#D9DCE0", roughness: 0.18, metalness: 0.45 }, // shiny light-grey armrest pads
-  plastic: { color: "#1F2124", roughness: 0.55, metalness: 0 },
+  steel: { color: "#C8CBCF", roughness: 0.25, metalness: 0.95 }, // gas-lift piston
+  plastic: { color: "#1F2124", roughness: 0.6, metalness: 0 }, // black nylon (height-adjust lever)
   wood: { color: "#8B6A4A", roughness: 0.6, metalness: 0 },
   glass: { color: "#DDE6EE", roughness: 0.05, metalness: 0 },
   other: { color: "#9CA3AF", roughness: 0.6, metalness: 0 },
@@ -114,7 +115,7 @@ export function Model({ url, manifest }: ModelProps) {
           }
         }
 
-        mat.envMapIntensity = role === "polished" ? 1.3 : role === "frame" || role === "base" ? 0.9 : 0.75;
+        mat.envMapIntensity = role === "polished" || role === "steel" ? 1.3 : role === "frame" || role === "base" ? 0.9 : 0.75;
         mat.needsUpdate = true;
       }
       obj.castShadow = false;
